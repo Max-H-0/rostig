@@ -21,6 +21,7 @@ jobs:
         run: cargo install wasm-pack
 
       - name: Build (web)
+        uses: actions/checkout@v4 
         run: wasm-pack build --target web
 
       - name: Upload Pages Artifact
