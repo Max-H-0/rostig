@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": 
+    [
+        {
+            "label": "Run (native)",
+            "type": "shell",
+            "command": "scripts/run-native",
+            "group": "build",
+            "problemMatcher": []
+        },
+
+        {
+            "label": "Build (native)",
+            "type": "shell",
+            "command": "scripts/build-native",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build (web)",
+            "type": "shell",
+            "command": "$scripts/build-web",
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

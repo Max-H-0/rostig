@@ -1,0 +1,4 @@
+#!/bin/bash
+
+build-native
+cargo run

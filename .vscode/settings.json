@@ -1,4 +1,8 @@
 {
     "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
-    "livePreview.defaultPreviewPath": "/pkg/index.html"
+    "livePreview.defaultPreviewPath": "/pkg/index.html",
+
+    "terminal.integrated.env.windows": { "PATH": "${workspaceFolder}/scripts;${env:PATH}" },
+    "terminal.integrated.env.linux":   { "PATH": "${workspaceFolder}/scripts;${env:PATH}" },
+    "terminal.integrated.env.osx":     { "PATH": "${workspaceFolder}/scripts;${env:PATH}" }
 }
