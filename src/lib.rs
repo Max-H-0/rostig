@@ -1,6 +1,9 @@
-use wgpu::{wgc::device, wgt::DeviceDescriptor};
-use winit::{event::{self, *}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
+use wgpu::{wgt::DeviceDescriptor};
+use winit::{event::{*}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 use winit::window::Window;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 
 
 struct State<'a>
@@ -41,7 +44,7 @@ impl<'a> State<'a>
         let (device, queue) = adapter.request_device(&DeviceDescriptor
         {
             required_features: wgpu::Features::empty(),
-            required_limits: if (!cfg!(target_arch="wasm32")) { 
+            required_limits: if cfg!(target_arch="wasm32") { 
                 wgpu::Limits::downlevel_webgl2_defaults() 
             } else { 
                 wgpu::Limits::default() 
@@ -69,6 +72,7 @@ impl<'a> State<'a>
             view_formats: vec![],
             desired_maximum_frame_latency: 2
         };
+        surface.configure(&device, &config);
 
 
         Self
@@ -83,7 +87,7 @@ impl<'a> State<'a>
     }
 
 
-    pub fn window (&self) -> &Window 
+    pub fn get_window (&self) -> &Window 
     {
         &self.window
     }
@@ -148,6 +152,7 @@ impl<'a> State<'a>
         drop(render_pass);
 
         self.queue.submit(std::iter::once(encoder.finish()));
+        self.window.pre_present_notify();
         output.present();
 
 
@@ -156,6 +161,7 @@ impl<'a> State<'a>
 }
 
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub async fn run()
 {
     cfg_if::cfg_if! 
@@ -198,14 +204,13 @@ pub async fn run()
 
     
     let mut state = State::new(&window).await;
-    let mut surface_configured = false;
 
 
     let result = event_loop.run(move |event, control_flow| match event 
     {
         Event::WindowEvent{ref event, window_id} =>
         {
-            if window_id == state.window().id() && !state.input(event)
+            if window_id == state.get_window().id() && !state.input(event)
             {
                 match event  
                 {
@@ -223,18 +228,12 @@ pub async fn run()
                     WindowEvent::Resized(physical_size) =>
                     {
                         state.resize(*physical_size);
-                        surface_configured = true;
                     }
 
                     WindowEvent::RedrawRequested =>
                     {
-                        state.window().request_redraw();
-
-
-                        if !surface_configured { return; }
-
-
                         state.update();
+                        
                         match state.render()
                         {
                             Ok(_) => {}
@@ -253,6 +252,8 @@ pub async fn run()
                                 log::warn!("Surface timeout");
                             }
                         }
+
+                        //state.get_window().request_redraw();
                     }
 
                     _ => {}
