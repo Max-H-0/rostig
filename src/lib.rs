@@ -53,7 +53,7 @@ impl<'a> State<'a>
 
         let capabilities = surface.get_capabilities(&adapter);
 
-        let surgace_format = capabilities.formats.iter()
+        let surface_format = capabilities.formats.iter()
             .find(|f| f.is_srgb())
             .copied()
             .unwrap_or(capabilities.formats[0]);
@@ -61,10 +61,10 @@ impl<'a> State<'a>
         let config = wgpu::SurfaceConfiguration
         {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            format: surgace_format,
+            format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: wgpu::PresentMode::Fifo, //capabilities.present_modes[0],
+            present_mode: wgpu::PresentMode::Mailbox, //capabilities.present_modes[0],
             alpha_mode: capabilities.alpha_modes[0],
             view_formats: vec![],
             desired_maximum_frame_latency: 2
