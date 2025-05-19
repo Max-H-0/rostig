@@ -2,9 +2,6 @@ use wgpu::{wgt::DeviceDescriptor};
 use winit::{event::{*}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 use winit::window::Window;
 
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-
 
 struct State<'a>
 {
@@ -161,7 +158,6 @@ impl<'a> State<'a>
 }
 
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub async fn run()
 {
     cfg_if::cfg_if! 
