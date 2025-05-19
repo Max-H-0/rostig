@@ -2,6 +2,9 @@ use wgpu::{wgt::DeviceDescriptor};
 use winit::{event::{*}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 use winit::window::Window;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
 
 struct State<'a>
 {
@@ -17,7 +20,7 @@ impl<'a> State<'a>
 {
     async fn new(window: &'a Window) -> State<'a>
     {
-        let size = window.inner_size();
+        let mut size = window.inner_size();
 
 
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor 
@@ -64,12 +67,15 @@ impl<'a> State<'a>
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: wgpu::PresentMode::Mailbox, //capabilities.present_modes[0],
+            present_mode: if capabilities.present_modes.contains(&wgpu::PresentMode::Mailbox) {
+                wgpu::PresentMode::Mailbox
+            } else {
+                wgpu::PresentMode::Fifo
+            },
             alpha_mode: capabilities.alpha_modes[0],
             view_formats: vec![],
             desired_maximum_frame_latency: 2
         };
-        surface.configure(&device, &config);
 
 
         Self
@@ -158,6 +164,7 @@ impl<'a> State<'a>
 }
 
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub async fn run()
 {
     cfg_if::cfg_if! 
@@ -200,6 +207,7 @@ pub async fn run()
 
     
     let mut state = State::new(&window).await;
+    let mut is_size_configured = false;
 
 
     let result = event_loop.run(move |event, control_flow| match event 
@@ -224,12 +232,17 @@ pub async fn run()
                     WindowEvent::Resized(physical_size) =>
                     {
                         state.resize(*physical_size);
+                        is_size_configured = true;
                     }
 
                     WindowEvent::RedrawRequested =>
                     {
                         state.update();
+
                         
+                        if !is_size_configured { return; }
+                        
+
                         match state.render()
                         {
                             Ok(_) => {}
